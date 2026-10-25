@@ -111,6 +111,11 @@ function parse_table(string $text, string $uhr = ''): array {
 $live = ['updated' => date('c'), 'station' => STATION];
 $errors = [];
 
+// Letzter Stand: fällt eine Quelle bei einem Lauf aus, bleibt ihr letzter gültiger Wert stehen
+// (die Seite zeigt dessen Zeitstempel). Die Zeitreihe in data/history/ bekommt trotzdem eine Lücke.
+$vorher = json_decode((string) @file_get_contents(ROOT . '/data/live.json'), true) ?: [];
+const BAEDER_MAX_ALTER = 3600;   // alte Auslastung höchstens 1 Stunde weiterzeigen, danach lieber gar nicht
+
 // --- Isar: Wassertemperatur (GKD, 15-Min-Werte der letzten 7 Tage) ---
 $html = http_get('https://www.gkd.bayern.de/de/fluesse/wassertemperatur/isar/muenchen-' . STATION . '/messwerte/tabelle');
 $temp = $html ? parse_table(html_text($html), 'Uhr') : [];
@@ -132,9 +137,9 @@ if ($pegel) foreach (MELDESTUFEN as $s => $cm) if ($pegel[0][1] >= $cm) $stufe =
 $tempHourly = array_values(array_filter($temp, fn($r) => substr($r[0], 14, 2) === '00'));
 
 $live['isar'] = [
-    'wassertemperatur' => $temp ? ['wert' => $temp[0][1], 'zeit' => $temp[0][0], 'serie' => array_reverse($tempHourly)] : null,
-    'wasserstand'      => $pegel ? ['wert' => $pegel[0][1], 'zeit' => $pegel[0][0], 'meldestufe' => $stufe, 'meldestufen' => MELDESTUFEN, 'serie' => array_reverse($pegel)] : null,
-    'abfluss'          => $abfluss ? ['wert' => $abfluss[0][1], 'zeit' => $abfluss[0][0], 'serie' => array_reverse($abfluss)] : null,
+    'wassertemperatur' => $temp ? ['wert' => $temp[0][1], 'zeit' => $temp[0][0], 'serie' => array_reverse($tempHourly)] : ($vorher['isar']['wassertemperatur'] ?? null),
+    'wasserstand'      => $pegel ? ['wert' => $pegel[0][1], 'zeit' => $pegel[0][0], 'meldestufe' => $stufe, 'meldestufen' => MELDESTUFEN, 'serie' => array_reverse($pegel)] : ($vorher['isar']['wasserstand'] ?? null),
+    'abfluss'          => $abfluss ? ['wert' => $abfluss[0][1], 'zeit' => $abfluss[0][0], 'serie' => array_reverse($abfluss)] : ($vorher['isar']['abfluss'] ?? null),
 ];
 
 // --- Bäder: Auslastung ---
@@ -167,6 +172,16 @@ foreach (lade_zaehler(ROOT . '/data/baeder.csv') as $bad => $bereiche) {
         if ($val) $baeder[$bad][$bereich] = ['besucher' => $val[0], 'max' => $val[1]];
     }
 }
+// SWM komplett ausgefallen: letzte Auslastung weiterzeigen, solange sie nicht zu alt ist
+$baederFrisch = $baeder;   // nur echte Werte dieses Laufs in die Zeitreihe
+$live['baeder_zeit'] = $live['updated'];
+if (!$baeder && in_array('swm', $errors, true) && !empty($vorher['baeder'])) {
+    $alt = $vorher['baeder_zeit'] ?? $vorher['updated'] ?? '';
+    if ($alt && time() - strtotime($alt) <= BAEDER_MAX_ALTER) {
+        $baeder = $vorher['baeder'];
+        $live['baeder_zeit'] = $alt;
+    }
+}
 $live['baeder'] = $baeder;
 $live['errors'] = $errors;
 
@@ -188,7 +203,7 @@ $f = ROOT . "/data/history/baeder-$month.csv";
 $new = !file_exists($f);
 $fh = fopen($f, 'a');
 if ($new) fputcsv($fh, ['abruf', 'bad', 'bereich', 'besucher', 'max'], ',', '"', '');
-foreach ($baeder as $bad => $bereiche) foreach ($bereiche as $bereich => $v) {
+foreach ($baederFrisch as $bad => $bereiche) foreach ($bereiche as $bereich => $v) {
     fputcsv($fh, [$now, $bad, $bereich, $v['besucher'], $v['max']], ',', '"', '');
 }
 fclose($fh);
