@@ -144,7 +144,8 @@ $live['isar'] = [
 
 // --- Bäder: Auslastung ---
 $swm = [];
-$json = http_get('https://www.swm.de/.rest/bath/visitorCount');
+// Cache-Buster: ohne Query-Parameter liefert der SWM-Webserver teils stundenlang eine alte Antwort aus
+$json = http_get('https://www.swm.de/.rest/bath/visitorCount?_=' . time());
 if ($json && ($d = json_decode($json, true)) && ($d['return_code'] ?? '') === 'success') {
     foreach ($d['data'] as $loc) foreach ($loc['area_list'] as $a) {
         $swm[$a['area_id']] = [(int) $a['customer_amount'], (int) $a['customer_amount_max']];
