@@ -18,6 +18,7 @@
  */
 
 date_default_timezone_set('Europe/Berlin');
+ini_set('serialize_precision', '-1');   // All-Inkl schreibt sonst 11.1999… statt 11.2 ins JSON
 
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: text/plain; charset=utf-8');
