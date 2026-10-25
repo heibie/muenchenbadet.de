@@ -209,35 +209,38 @@
       .tipps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     /* Mobil wie openbibmuc.de: Bäder/Badestellen als Bottom-Sheet über der Karte.
-       Eingeklappt ("Peek") sind Griff, Tabs, Filter und die ersten zwei Einträge sichtbar –
-       die Höhe misst app.js (setPeek -> --peek). Griff klappt auf fast volle Höhe auf,
-       Tap in die Karte klappt zurück auf Peek. Nur Tap, kein Drag. */
+       Zwei Zustände: offen = Griff, Tabs, Filter und die ersten zwei Einträge (Höhe misst app.js,
+       setPeek -> --peek, höchstens 60 % des Kartenblocks; Liste scrollt darin) und
+       zu (.sheet-zu) = nur Griff + Tabs (--zu). Griff schaltet um, Tap in die Karte klappt zu,
+       Tab oder Marker klappt auf. Nur Tap, kein Drag. */
     #sheet-griff { display: none; }
     @media (max-width: 720px) {
       main { padding: 12px 16px; }
       footer { padding: 8px 16px 24px; }
-      .split { display: block; position: relative; height: 78svh; min-height: 460px; overflow: hidden; border-radius: 12px; }
+      .split { display: block; position: relative; height: 85svh; min-height: 480px; overflow: hidden; border-radius: 12px; }
       #kartenkachel { height: 100%; display: flex; flex-direction: column; padding: 12px; }
       #kartenkachel h2 { margin-bottom: 6px; }
-      #kartenkachel .legend { order: -1; margin: 0 0 8px; gap: 4px 10px; font-size: .72rem; }
+      #kartenkachel .legend { order: -1; margin: 0 -12px 6px; padding: 0 12px; gap: 10px; font-size: .72rem; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+      #kartenkachel .legend::-webkit-scrollbar { display: none; }
+      #liste .ort > .muted { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .78rem; align-self: center; }
       #map { flex: 1; height: auto; min-height: 0; }
       #seitenleiste {
         position: absolute; left: 0; right: 0; bottom: 0;
-        height: 92%; display: flex; flex-direction: column;
+        height: var(--peek, 55%); display: flex; flex-direction: column;
         padding: 0 14px; border-radius: 16px 16px 0 0; border: none; border-top: 4px solid var(--isar);
         box-shadow: 0 -6px 24px rgba(0,0,0,.22);
-        transform: translateY(calc(100% - var(--peek, 340px)));
+        transform: translateY(0);
         transition: transform .3s cubic-bezier(.4,0,.2,1);
         z-index: 900;
       }
-      #seitenleiste.sheet-open { transform: translateY(0); }
+      #seitenleiste.sheet-zu { transform: translateY(calc(100% - var(--zu, 76px))); }
       #sheet-griff { display: block; position: relative; flex: none; height: 32px; margin: 0 -14px; cursor: pointer; border: 0; background: none; width: calc(100% + 28px); }
       #sheet-griff::before {
         content: ''; position: absolute; top: 50%; left: 50%; width: 12px; height: 12px;
         border-right: 3px solid var(--isar-dark); border-bottom: 3px solid var(--isar-dark); border-radius: 0 0 2px 0;
-        transform: translate(-50%, -30%) rotate(-135deg); transition: transform .3s;
+        transform: translate(-50%, -70%) rotate(45deg); transition: transform .3s;   /* Pfeil nach unten: zuklappen */
       }
-      #seitenleiste.sheet-open #sheet-griff::before { transform: translate(-50%, -70%) rotate(45deg); }
+      #seitenleiste.sheet-zu #sheet-griff::before { transform: translate(-50%, -30%) rotate(-135deg); }   /* Pfeil nach oben: aufklappen */
       #seitenleiste .tabs { flex: none; }
       .filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -14px 8px; padding: 0 14px; }
       .filter::-webkit-scrollbar { display: none; }
@@ -360,6 +363,6 @@
     <a href="impressum.html">Impressum</a>
   </footer>
 
-  <script src="js/app.js?v=2026-10-25c"></script>
+  <script src="js/app.js?v=2026-10-25d"></script>
 </body>
 </html>

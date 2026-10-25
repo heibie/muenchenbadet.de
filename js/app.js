@@ -359,17 +359,19 @@ function listeBadestellen() {
 
 // Mobil (≤ 720px): Seitenleiste ist ein Bottom-Sheet über der Karte (CSS in index.html)
 const istMobil = () => window.matchMedia('(max-width: 720px)').matches;
-const sheet = auf => $('seitenleiste').classList.toggle('sheet-open', auf);
-// Peek-Höhe so, dass die ersten zwei Einträge der Liste sichtbar sind
+const sheet = auf => $('seitenleiste').classList.toggle('sheet-zu', !auf);
+// Offene Höhe so, dass die ersten zwei Einträge sichtbar sind (max. 60 % des Kartenblocks),
+// eingeklappt nur Griff + Tabs
 function setPeek() {
   if (!istMobil()) return;
-  const s = $('seitenleiste'), orte = $('liste').querySelectorAll('.ort');
+  const s = $('seitenleiste'), top = s.getBoundingClientRect().top;
+  const orte = $('liste').querySelectorAll('.ort');
   const letzter = orte[Math.min(1, orte.length - 1)];
-  if (!letzter) return;
-  const h = letzter.getBoundingClientRect().bottom - s.getBoundingClientRect().top + 8;
-  s.style.setProperty('--peek', `${Math.round(Math.min(h, s.offsetHeight))}px`);
+  const max = s.parentElement.offsetHeight * 0.6;
+  if (letzter) s.style.setProperty('--peek', `${Math.round(Math.min(letzter.getBoundingClientRect().bottom - top + $('liste').scrollTop + 8, max))}px`);
+  s.style.setProperty('--zu', `${Math.round($('tabs').getBoundingClientRect().bottom - top + 8)}px`);
 }
-const peekPx = () => parseFloat(getComputedStyle($('seitenleiste')).getPropertyValue('--peek')) || 340;
+const peekPx = () => $('seitenleiste').offsetHeight;
 
 function zeigeListe(tab = aktuellerTab) {
   aktuellerTab = tab;
@@ -378,7 +380,7 @@ function zeigeListe(tab = aktuellerTab) {
   $('liste').innerHTML = `<div class="orte">${tab === 'baeder' ? listeBaeder() : listeBadestellen()}</div>`;
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
   $('liste').scrollTop = 0;
-  setPeek();
+  if (!$('seitenleiste').style.getPropertyValue('--peek')) setPeek();   // nur einmal messen, Höhe soll nicht springen
   if (location.hash) history.replaceState(null, '', location.pathname);
 }
 
@@ -396,7 +398,7 @@ function zeigeSteckbrief(key, { zoom = true } = {}) {
   $('liste').scrollTop = 0;
 
   setAktivMarker(key);
-  if (istMobil()) sheet(false);   // Steckbrief im Peek zeigen, Karte bleibt oben sichtbar
+  if (istMobil()) sheet(true);   // Steckbrief im offenen Sheet, Karte bleibt oben sichtbar
   const m = markers[key];
   // Mobil verdeckt das Sheet den unteren Teil der Karte -> Ziel im freien oberen Teil zeigen
   const unten = istMobil() ? peekPx() : 0;
@@ -493,9 +495,9 @@ function steckbriefBadestelle(b) {
 }
 
 function renderSeitenleiste() {
-  $('tabs').addEventListener('click', e => { if (e.target.dataset.tab) { zeigeListe(e.target.dataset.tab); } });
-  $('sheet-griff').addEventListener('click', () => $('seitenleiste').classList.toggle('sheet-open'));
-  window.addEventListener('resize', () => { if (!$('tabs').hidden) setPeek(); });
+  $('tabs').addEventListener('click', e => { if (e.target.dataset.tab) { zeigeListe(e.target.dataset.tab); sheet(true); } });
+  $('sheet-griff').addEventListener('click', () => $('seitenleiste').classList.toggle('sheet-zu'));
+  window.addEventListener('resize', () => { if (!$('tabs').hidden) { $('seitenleiste').style.removeProperty('--peek'); setPeek(); } });
   $('liste').addEventListener('click', e => {
     if (e.target.closest('[data-back]')) return zeigeListe();
     const fb = e.target.closest('[data-filter]');
@@ -510,7 +512,7 @@ function renderSeitenleiste() {
     e.preventDefault();
     zeigeSteckbrief(el.dataset.key);
   });
-  // Klick in die leere Karte -> zurück zur Liste, mobil Sheet auf Peek
+  // Klick in die leere Karte -> zurück zur Liste, mobil Sheet zuklappen
   map.on('click', () => { if ($('tabs').hidden) zeigeListe(); sheet(false); });
 
   const m = location.hash.match(/^#(bad|badestelle)\/(.+)$/);
