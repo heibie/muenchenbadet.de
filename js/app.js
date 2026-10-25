@@ -431,6 +431,7 @@ function steckbriefBad(b) {
 
   return `
     <button class="back-link" data-back>← Alle Bäder</button>
+    ${b.bild_url ? `<figure class="steckbrief-bild"><img src="${esc(b.bild_url)}" alt="${esc(b.name)}" loading="lazy"><figcaption>Foto: SWM</figcaption></figure>` : ''}
     <h2 class="display name">${esc(b.name)}</h2>
     <div class="typ">${esc(b.art)} · ${esc(b.strasse)}, ${esc(b.plz)} ${esc(b.ort)}</div>
 

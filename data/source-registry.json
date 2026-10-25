@@ -8,43 +8,129 @@
         {
           "id": "isar-wassertemperatur",
           "title": "Wassertemperatur Isar",
-          "files": ["data/live.json", "data/history/isar-*.csv"],
+          "files": [
+            "data/live.json",
+            "data/history/isar-*.csv"
+          ],
           "note": "Messstelle München (16005701). Kein API, die Werte werden aus der HTML-Tabelle gelesen.",
-          "used_in": [{ "label": "Kachel „Isar in München“", "href": "/#isar" }, { "label": "Steckbrief Badestelle", "href": "/" }],
-          "original_source": { "label": "Gewässerkundlicher Dienst Bayern", "href": "https://www.gkd.bayern.de/de/fluesse/wassertemperatur/isar/muenchen-16005701" },
-          "license": { "label": "CC BY 4.0", "href": "https://creativecommons.org/licenses/by/4.0/deed.de" },
+          "used_in": [
+            {
+              "label": "Kachel „Isar in München“",
+              "href": "/#isar"
+            },
+            {
+              "label": "Steckbrief Badestelle",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "Gewässerkundlicher Dienst Bayern",
+            "href": "https://www.gkd.bayern.de/de/fluesse/wassertemperatur/isar/muenchen-16005701"
+          },
+          "license": {
+            "label": "CC BY 4.0",
+            "href": "https://creativecommons.org/licenses/by/4.0/deed.de"
+          },
           "turnus": "15-Minuten-Werte",
           "live_key": "wassertemperatur"
         },
         {
           "id": "isar-pegel",
           "title": "Wasserstand und Abfluss Isar",
-          "files": ["data/live.json", "data/history/isar-*.csv"],
+          "files": [
+            "data/live.json",
+            "data/history/isar-*.csv"
+          ],
           "note": "Gleiche Messstelle. Meldestufen 1–4 bei 240, 300, 380 und 520 cm laut HND.",
-          "used_in": [{ "label": "Kachel „Isar in München“", "href": "/#isar" }, { "label": "Hinweise (Hochwasser)", "href": "/" }],
-          "original_source": { "label": "Hochwassernachrichtendienst Bayern", "href": "https://www.hnd.bayern.de/pegel/isar/muenchen-16005701" },
-          "license": { "label": "CC BY 4.0", "href": "https://creativecommons.org/licenses/by/4.0/deed.de" },
+          "used_in": [
+            {
+              "label": "Kachel „Isar in München“",
+              "href": "/#isar"
+            },
+            {
+              "label": "Hinweise (Hochwasser)",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "Hochwassernachrichtendienst Bayern",
+            "href": "https://www.hnd.bayern.de/pegel/isar/muenchen-16005701"
+          },
+          "license": {
+            "label": "CC BY 4.0",
+            "href": "https://creativecommons.org/licenses/by/4.0/deed.de"
+          },
           "turnus": "Stundenwerte",
           "live_key": "wasserstand"
         },
         {
           "id": "swm-auslastung",
           "title": "Auslastung der SWM-Bäder",
-          "files": ["data/live.json", "data/history/baeder-*.csv"],
+          "files": [
+            "data/live.json",
+            "data/history/baeder-*.csv"
+          ],
           "note": "Inoffiziell: derselbe Endpunkt, den swm.de für die eigene Auslastungsseite nutzt. Kann sich ohne Ankündigung ändern.",
-          "used_in": [{ "label": "Liste Bäder", "href": "/" }, { "label": "Karte", "href": "/" }],
-          "original_source": { "label": "swm.de – Auslastung", "href": "https://www.swm.de/baeder/auslastung" },
-          "license": { "label": "keine Lizenz angegeben" },
+          "used_in": [
+            {
+              "label": "Liste Bäder",
+              "href": "/"
+            },
+            {
+              "label": "Karte",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "swm.de – Auslastung",
+            "href": "https://www.swm.de/baeder/auslastung"
+          },
+          "license": {
+            "label": "keine Lizenz angegeben"
+          },
           "turnus": "laufend"
+        },
+        {
+          "id": "swm-fotos",
+          "title": "Fotos der Bäder",
+          "files": [
+            "data/baeder.csv"
+          ],
+          "note": "Vorschaubild (og:image) der jeweiligen Bad-Seite auf swm.de, direkt von dort eingebunden. Spalte bild_url, von Hand gepflegt.",
+          "used_in": [
+            {
+              "label": "Steckbrief Bad",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "swm.de – Bäder",
+            "href": "https://www.swm.de/baeder"
+          },
+          "license": {
+            "label": "© Stadtwerke München"
+          },
+          "turnus": "von Hand"
         },
         {
           "id": "wetter",
           "title": "Wetter München",
           "files": [],
           "note": "Wird direkt im Browser abgerufen, nicht gespeichert.",
-          "used_in": [{ "label": "Kachel „Wetter in München“", "href": "/" }],
-          "original_source": { "label": "Open-Meteo", "href": "https://open-meteo.com/" },
-          "license": { "label": "CC BY 4.0", "href": "https://creativecommons.org/licenses/by/4.0/deed.de" },
+          "used_in": [
+            {
+              "label": "Kachel „Wetter in München“",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "Open-Meteo",
+            "href": "https://open-meteo.com/"
+          },
+          "license": {
+            "label": "CC BY 4.0",
+            "href": "https://creativecommons.org/licenses/by/4.0/deed.de"
+          },
           "turnus": "bei jedem Seitenaufruf"
         }
       ]
@@ -56,31 +142,74 @@
         {
           "id": "swm-baeder",
           "title": "Schwimmbäder in München",
-          "files": ["data/quellen/swm_schwimmbaeder.csv"],
+          "files": [
+            "data/quellen/swm_schwimmbaeder.csv"
+          ],
           "note": "Adressen, Art, Öffnungszeiten. Stand des Datensatzes: 13.05.2025, Öffnungszeiten können veraltet sein.",
-          "used_in": [{ "label": "Liste und Steckbrief Bäder", "href": "/" }],
-          "original_source": { "label": "opendata.muenchen.de", "href": "https://opendata.muenchen.de/dataset/schwimmbaeder-in-muenchen" },
-          "license": { "label": "DL-DE-BY 2.0", "href": "https://www.govdata.de/dl-de/by-2-0" },
+          "used_in": [
+            {
+              "label": "Liste und Steckbrief Bäder",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "opendata.muenchen.de",
+            "href": "https://opendata.muenchen.de/dataset/schwimmbaeder-in-muenchen"
+          },
+          "license": {
+            "label": "DL-DE-BY 2.0",
+            "href": "https://www.govdata.de/dl-de/by-2-0"
+          },
           "turnus": "unregelmäßig"
         },
         {
           "id": "badezonen",
           "title": "Badezonen Isar (Baden erlaubt/verboten)",
-          "files": ["data/quellen/badezonen.geojson"],
+          "files": [
+            "data/quellen/badezonen.geojson"
+          ],
           "note": "WFS-Layer rku_wfs:isar_baden des Geoportals München.",
-          "used_in": [{ "label": "Karte", "href": "/" }],
-          "original_source": { "label": "opendata.muenchen.de", "href": "https://opendata.muenchen.de/dataset/baden_isar_opendata" },
-          "license": { "label": "DL-DE-BY 2.0", "href": "https://www.govdata.de/dl-de/by-2-0" },
+          "used_in": [
+            {
+              "label": "Karte",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "opendata.muenchen.de",
+            "href": "https://opendata.muenchen.de/dataset/baden_isar_opendata"
+          },
+          "license": {
+            "label": "DL-DE-BY 2.0",
+            "href": "https://www.govdata.de/dl-de/by-2-0"
+          },
           "turnus": "unregelmäßig"
         },
         {
           "id": "gefahrenstellen",
           "title": "Gefahrenstellen Isar",
-          "files": ["data/quellen/gefahrenstellen.geojson"],
+          "files": [
+            "data/quellen/gefahrenstellen.geojson"
+          ],
           "note": "WFS-Layer rku_wfs:isar_gefahrenstellen des Geoportals München.",
-          "used_in": [{ "label": "Karte", "href": "/" }, { "label": "Steckbrief Badestelle", "href": "/" }],
-          "original_source": { "label": "opendata.muenchen.de", "href": "https://opendata.muenchen.de/dataset/baden_isar_opendata" },
-          "license": { "label": "DL-DE-BY 2.0", "href": "https://www.govdata.de/dl-de/by-2-0" },
+          "used_in": [
+            {
+              "label": "Karte",
+              "href": "/"
+            },
+            {
+              "label": "Steckbrief Badestelle",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "opendata.muenchen.de",
+            "href": "https://opendata.muenchen.de/dataset/baden_isar_opendata"
+          },
+          "license": {
+            "label": "DL-DE-BY 2.0",
+            "href": "https://www.govdata.de/dl-de/by-2-0"
+          },
           "turnus": "unregelmäßig"
         }
       ]
@@ -92,31 +221,80 @@
         {
           "id": "baeder",
           "title": "Bädertabelle",
-          "files": ["data/baeder.csv"],
+          "files": [
+            "data/baeder.csv"
+          ],
           "note": "SWM-Stammdaten plus eigene Spalten: Merkmale (Hallenbad, Sauna, …) und die Zähler-IDs der Auslastung.",
-          "used_in": [{ "label": "Liste Bäder, Filter", "href": "/" }],
-          "original_source": { "label": "eigene Zusammenstellung" },
-          "license": { "label": "CC BY 4.0", "href": "https://creativecommons.org/licenses/by/4.0/deed.de" },
+          "used_in": [
+            {
+              "label": "Liste Bäder, Filter",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "eigene Zusammenstellung"
+          },
+          "license": {
+            "label": "CC BY 4.0",
+            "href": "https://creativecommons.org/licenses/by/4.0/deed.de"
+          },
           "turnus": "von Hand"
         },
         {
           "id": "badestellen",
           "title": "Isar-Badestellen",
-          "files": ["data/badestellen.csv", "data/badestellen.geojson"],
+          "files": [
+            "data/badestellen.csv",
+            "data/badestellen.geojson"
+          ],
           "note": "Ausgewählte Badestellen innerhalb der erlaubten Badezonen. Koordinaten teils noch grob.",
-          "used_in": [{ "label": "Liste Isar-Badestellen", "href": "/" }, { "label": "Karte", "href": "/" }],
-          "original_source": { "label": "eigene Zusammenstellung" },
-          "license": { "label": "CC BY 4.0", "href": "https://creativecommons.org/licenses/by/4.0/deed.de" },
+          "used_in": [
+            {
+              "label": "Liste Isar-Badestellen",
+              "href": "/"
+            },
+            {
+              "label": "Karte",
+              "href": "/"
+            }
+          ],
+          "original_source": {
+            "label": "eigene Zusammenstellung"
+          },
+          "license": {
+            "label": "CC BY 4.0",
+            "href": "https://creativecommons.org/licenses/by/4.0/deed.de"
+          },
           "turnus": "von Hand"
         }
       ]
     }
   ],
   "attribution": [
-    { "title": "OpenStreetMap", "note": "Kartenhintergrund © OpenStreetMap-Mitwirkende (ODbL)", "href": "https://www.openstreetmap.org/copyright" },
-    { "title": "Leaflet", "note": "Kartenbibliothek (BSD-2-Clause)", "href": "https://leafletjs.com/" },
-    { "title": "PapaParse", "note": "CSV-Parser (MIT)", "href": "https://www.papaparse.com/" },
-    { "title": "Meteocons", "note": "Wettericons von Bas Milius (MIT)", "href": "https://github.com/basmilius/weather-icons" },
-    { "title": "Fira Sans Condensed", "note": "Schrift (SIL Open Font License)", "href": "https://fonts.google.com/specimen/Fira+Sans+Condensed" }
+    {
+      "title": "OpenStreetMap",
+      "note": "Kartenhintergrund © OpenStreetMap-Mitwirkende (ODbL)",
+      "href": "https://www.openstreetmap.org/copyright"
+    },
+    {
+      "title": "Leaflet",
+      "note": "Kartenbibliothek (BSD-2-Clause)",
+      "href": "https://leafletjs.com/"
+    },
+    {
+      "title": "PapaParse",
+      "note": "CSV-Parser (MIT)",
+      "href": "https://www.papaparse.com/"
+    },
+    {
+      "title": "Meteocons",
+      "note": "Wettericons von Bas Milius (MIT)",
+      "href": "https://github.com/basmilius/weather-icons"
+    },
+    {
+      "title": "Fira Sans Condensed",
+      "note": "Schrift (SIL Open Font License)",
+      "href": "https://fonts.google.com/specimen/Fira+Sans+Condensed"
+    }
   ]
 }

@@ -123,7 +123,7 @@ def abgleich_baeder():
                 if col in fields:
                     r[col] = "ja" if wort in art else "nein"
             rows.append(r)
-            changes.append(f"NEU {new_id} {key} – Merkmale + swm_*-Zähler-IDs von Hand prüfen")
+            changes.append(f"NEU {new_id} {key} – Merkmale, swm_*-Zähler-IDs und bild_url (og:image der SWM-Seite) von Hand nachtragen")
         for col in BAEDER_QUELLSPALTEN:
             if r.get(col, "") != s.get(col, ""):
                 if col in r:  # nur bestehende Einträge als Änderung melden
