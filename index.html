@@ -54,7 +54,7 @@
     .nav-links a { font-size: .8rem; color: #fff; opacity: .85; text-decoration: none; white-space: nowrap; }
     .nav-links a:hover { opacity: 1; text-decoration: underline; }
 
-    main { padding: 16px 24px; display: grid; gap: 16px; }
+    main { padding: 16px 24px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 
     .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
     .card h2 { font-size: 1.15rem; margin-bottom: 10px; color: var(--isar-dark); }
@@ -201,7 +201,7 @@
     footer a { color: inherit; }
 
     @media (max-width: 860px) {
-      .hero, .split { grid-template-columns: 1fr; }
+      .hero, .split { grid-template-columns: minmax(0, 1fr); }  /* minmax(0,…): sonst drückt min-content die Spalte über den Rand */
       #map { height: 380px; }
       .big { font-size: 3.2rem; }
     }
@@ -209,8 +209,9 @@
       .tipps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     /* Mobil wie openbibmuc.de: Bäder/Badestellen als Bottom-Sheet über der Karte.
-       Eingeklappt bleiben Griff + Tabs sichtbar; Tap auf den Griff, auf einen Tab oder
-       einen Marker klappt auf, Tap in die leere Karte klappt zu. Nur Tap, kein Drag. */
+       Eingeklappt ("Peek") sind Griff, Tabs, Filter und die ersten zwei Einträge sichtbar –
+       die Höhe misst app.js (setPeek -> --peek). Griff klappt auf fast volle Höhe auf,
+       Tap in die Karte klappt zurück auf Peek. Nur Tap, kein Drag. */
     #sheet-griff { display: none; }
     @media (max-width: 720px) {
       main { padding: 12px 16px; }
@@ -222,15 +223,15 @@
       #map { flex: 1; height: auto; min-height: 0; }
       #seitenleiste {
         position: absolute; left: 0; right: 0; bottom: 0;
-        height: 64%; display: flex; flex-direction: column;
+        height: 92%; display: flex; flex-direction: column;
         padding: 0 14px; border-radius: 16px 16px 0 0; border: none; border-top: 4px solid var(--isar);
         box-shadow: 0 -6px 24px rgba(0,0,0,.22);
-        transform: translateY(calc(100% - 92px));
+        transform: translateY(calc(100% - var(--peek, 340px)));
         transition: transform .3s cubic-bezier(.4,0,.2,1);
         z-index: 900;
       }
       #seitenleiste.sheet-open { transform: translateY(0); }
-      #sheet-griff { display: block; position: relative; flex: none; height: 44px; margin: 0 -14px; cursor: pointer; border: 0; background: none; width: calc(100% + 28px); }
+      #sheet-griff { display: block; position: relative; flex: none; height: 32px; margin: 0 -14px; cursor: pointer; border: 0; background: none; width: calc(100% + 28px); }
       #sheet-griff::before {
         content: ''; position: absolute; top: 50%; left: 50%; width: 12px; height: 12px;
         border-right: 3px solid var(--isar-dark); border-bottom: 3px solid var(--isar-dark); border-radius: 0 0 2px 0;
@@ -238,6 +239,9 @@
       }
       #seitenleiste.sheet-open #sheet-griff::before { transform: translate(-50%, -70%) rotate(45deg); }
       #seitenleiste .tabs { flex: none; }
+      .filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -14px 8px; padding: 0 14px; }
+      .filter::-webkit-scrollbar { display: none; }
+      .filter button { flex: none; }
       #liste { flex: 1; min-height: 0; max-height: none; overflow: auto; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
       #map .leaflet-top, #map .leaflet-bottom { z-index: 400; }
     }
@@ -356,6 +360,6 @@
     <a href="impressum.html">Impressum</a>
   </footer>
 
-  <script src="js/app.js?v=2026-10-25b"></script>
+  <script src="js/app.js?v=2026-10-25c"></script>
 </body>
 </html>

@@ -360,6 +360,16 @@ function listeBadestellen() {
 // Mobil (≤ 720px): Seitenleiste ist ein Bottom-Sheet über der Karte (CSS in index.html)
 const istMobil = () => window.matchMedia('(max-width: 720px)').matches;
 const sheet = auf => $('seitenleiste').classList.toggle('sheet-open', auf);
+// Peek-Höhe so, dass die ersten zwei Einträge der Liste sichtbar sind
+function setPeek() {
+  if (!istMobil()) return;
+  const s = $('seitenleiste'), orte = $('liste').querySelectorAll('.ort');
+  const letzter = orte[Math.min(1, orte.length - 1)];
+  if (!letzter) return;
+  const h = letzter.getBoundingClientRect().bottom - s.getBoundingClientRect().top + 8;
+  s.style.setProperty('--peek', `${Math.round(Math.min(h, s.offsetHeight))}px`);
+}
+const peekPx = () => parseFloat(getComputedStyle($('seitenleiste')).getPropertyValue('--peek')) || 340;
 
 function zeigeListe(tab = aktuellerTab) {
   aktuellerTab = tab;
@@ -367,6 +377,8 @@ function zeigeListe(tab = aktuellerTab) {
   $('tabs').hidden = false;
   $('liste').innerHTML = `<div class="orte">${tab === 'baeder' ? listeBaeder() : listeBadestellen()}</div>`;
   document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  $('liste').scrollTop = 0;
+  setPeek();
   if (location.hash) history.replaceState(null, '', location.pathname);
 }
 
@@ -384,10 +396,10 @@ function zeigeSteckbrief(key, { zoom = true } = {}) {
   $('liste').scrollTop = 0;
 
   setAktivMarker(key);
-  if (istMobil()) sheet(true);
+  if (istMobil()) sheet(false);   // Steckbrief im Peek zeigen, Karte bleibt oben sichtbar
   const m = markers[key];
-  // Mobil verdeckt das offene Sheet den unteren Teil der Karte -> Ziel im freien oberen Teil zeigen
-  const unten = istMobil() ? Math.round(map.getSize().y * 0.64) : 0;
+  // Mobil verdeckt das Sheet den unteren Teil der Karte -> Ziel im freien oberen Teil zeigen
+  const unten = istMobil() ? peekPx() : 0;
   const pad = { paddingTopLeft: [30, 30], paddingBottomRight: [30, 30 + unten] };
   if (zoom && umgriffe[key]) map.fitBounds(umgriffe[key].getBounds(), { ...pad, maxZoom: 16 });
   else if (m && zoom) map.fitBounds(L.latLngBounds([m.getLatLng(), m.getLatLng()]), { ...pad, maxZoom: Math.max(map.getZoom(), 14) });
@@ -481,8 +493,9 @@ function steckbriefBadestelle(b) {
 }
 
 function renderSeitenleiste() {
-  $('tabs').addEventListener('click', e => { if (e.target.dataset.tab) { zeigeListe(e.target.dataset.tab); sheet(true); } });
+  $('tabs').addEventListener('click', e => { if (e.target.dataset.tab) { zeigeListe(e.target.dataset.tab); } });
   $('sheet-griff').addEventListener('click', () => $('seitenleiste').classList.toggle('sheet-open'));
+  window.addEventListener('resize', () => { if (!$('tabs').hidden) setPeek(); });
   $('liste').addEventListener('click', e => {
     if (e.target.closest('[data-back]')) return zeigeListe();
     const fb = e.target.closest('[data-filter]');
@@ -497,7 +510,7 @@ function renderSeitenleiste() {
     e.preventDefault();
     zeigeSteckbrief(el.dataset.key);
   });
-  // Klick in die leere Karte -> zurück zur Liste, mobil Sheet zuklappen
+  // Klick in die leere Karte -> zurück zur Liste, mobil Sheet auf Peek
   map.on('click', () => { if ($('tabs').hidden) zeigeListe(); sheet(false); });
 
   const m = location.hash.match(/^#(bad|badestelle)\/(.+)$/);
