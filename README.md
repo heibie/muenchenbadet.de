@@ -2,15 +2,14 @@
 
 Baden und Schwimmen in München aus offenen Daten: Wassertemperatur und Pegel der Isar, Auslastung der SWM-Bäder, Badestellen und Gefahrenstellen an der Isar, Badewetter.
 
-**Status:** Git-Repo `heibie/muenchenbadet.de`, Deploy auf All-Inkl per GitHub Actions (seit 2026-10-25).
+**Status:** Git-Repo `heibie/muenchenbadet.de`, Deploy per GitHub Actions (seit 2026-10-25).
 
 ## Deploy
 
-- Push auf `main` → `.github/workflows/deploy.yml` → rsync nach All-Inkl (`/www/htdocs/v148448/muenchenbadet.de/`). Muster wie openbibmuc.de, gleiche Secrets-Namen: `SSH_PRIVATE_KEY`, `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_PATH`
-- Nicht mit deployt, und von `--delete` nicht angefasst: `data/live.json`, `data/history/` (entstehen auf dem Server), `cron/_cfg.php`. Nicht mit deployt: `scripts/` und `README.md`
-- `cron/_cfg.php` (Cron-Token, gitignored) einmalig von Hand per scp auf den Server laden. Vorlage: `cron/_cfg.example.php`
-- Cron: KAS-Cronjob alle 15 Min auf `https://muenchenbadet.de/cron/fetch_live.php?token=…`. Per URL, weil das CLI-PHP auf All-Inkl nur 7.4 ist. Ohne Token antwortet das Skript mit 403
-- `scripts/update_quellen.py` läuft nur lokal (kein Python auf All-Inkl). Danach committen und pushen
+- Push auf `main` → `.github/workflows/deploy.yml` → rsync auf den Webserver (Zugangsdaten als GitHub-Secrets)
+- `data/live.json` und `data/history/` entstehen auf dem Server und werden beim Deploy nicht angefasst
+- `cron/fetch_live.php` läuft live als Cronjob per URL mit Token. Den Token liest das Skript aus `cron/_cfg.php` (gitignored, von Hand auf den Server laden; Vorlage `cron/_cfg.example.php`). Ohne gültigen Token antwortet es mit 403
+- `scripts/update_quellen.py` läuft lokal, danach committen und pushen
 
 ## Lokal starten
 

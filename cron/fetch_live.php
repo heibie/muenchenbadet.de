@@ -12,13 +12,13 @@
  * Parser, bleibt der jeweilige Block im JSON leer (+ "error"), der Rest läuft weiter.
  *
  * Aufruf lokal:  php cron/fetch_live.php
- * Aufruf live:   https://muenchenbadet.de/cron/fetch_live.php?token=… (KAS-Cronjob alle 15 Min;
- *                per URL, weil das CLI-PHP auf All-Inkl nur 7.4 ist). Token steht in cron/_cfg.php
- *                (gitignored, von Hand auf den Server laden, Vorlage: _cfg.example.php).
+ * Aufruf live:   https://muenchenbadet.de/cron/fetch_live.php?token=… (Cronjob alle 15 Min).
+ *                Token steht in cron/_cfg.php (gitignored, von Hand auf den Server laden,
+ *                Vorlage: _cfg.example.php).
  */
 
 date_default_timezone_set('Europe/Berlin');
-ini_set('serialize_precision', '-1');   // All-Inkl schreibt sonst 11.1999… statt 11.2 ins JSON
+ini_set('serialize_precision', '-1');   // sonst landet je nach Server-Konfiguration 11.1999… statt 11.2 im JSON
 
 if (PHP_SAPI !== 'cli') {
     header('Content-Type: text/plain; charset=utf-8');
