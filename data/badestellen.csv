@@ -1,0 +1,9 @@
+id,slug,name,gewaesser,badezone_id,lat,lon,umgriff_lat_sued,umgriff_lat_nord,koordinaten_status,messstelle_gkd,fkk,wasserwacht,beschreibung
+1,isartal,Isartal,Isar,isar_baden.8,48.08103,11.54233,48.077,48.0853,"grob (Mitte der Badezone auf Höhe des Orts, ungeprüft)",16005701,,,
+2,flosslaende,Floßlände,Isar,isar_baden.8,48.08959,11.54837,48.0853,48.092,"grob (Mitte der Badezone auf Höhe des Orts, ungeprüft)",16005701,ja,,
+3,maria-einsiedel,Maria Einsiedel,Isar,isar_baden.6,48.09907,11.54971,48.0925,48.105,"grob (Mitte der Badezone auf Höhe des Orts, ungeprüft)",16005701,,,
+4,flaucher,Flaucher,Isar,isar_baden.16,48.10734,11.55765,48.105,48.1105,"grob (Mitte der Badezone auf Höhe des Orts, ungeprüft)",16005701,,Marienklausenbrücke (linkes Ufer),
+5,brudermuehl,Brudermühl bis Wittelsbacher Brücke,Isar,isar_baden.16,48.11332,11.5595,48.1105,48.123,"grob (Mitte der Badezone auf Höhe des Orts, ungeprüft)",16005701,ja,Flauchersteg (linkes Ufer),
+6,wittelsbacher,Wittelsbacher bis Reichenbachbrücke,Isar,isar_baden.17,48.1248,11.57247,48.1225,48.1275,"grob (Mitte der Badezone auf Höhe des Orts, ungeprüft)",16005701,,,
+7,ifflandstrasse,Ifflandstraße,Isar,isar_baden.15,48.15517,11.60421,48.15,48.1585,"grob (Mitte der Badezone auf Höhe des Orts, ungeprüft)",16005701,,,
+8,englischer-garten,Englischer Garten,Isar,isar_baden.15,48.16201,11.61056,48.1585,48.168,"grob (Mitte der Badezone auf Höhe des Orts, ungeprüft)",16005701,ja,,

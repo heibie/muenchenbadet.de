@@ -1,0 +1,105 @@
+/* Gemeinsame Styles für Unterseiten (Daten & FAQ, Impressum) – Farben wie index.html */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --isar:      #1b8aa6;
+  --isar-dark: #0e4f63;
+  --sand:      #f6f3ec;
+  --ink:       #10262e;
+  --ink-dim:   #5b6f76;
+  --surface:   #ffffff;
+  --border:    #dfe6e8;
+  --warn:      #8a5a00;
+  --warn-bg:   #fff8ec;
+}
+body { font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--sand); color: var(--ink); line-height: 1.6; }
+.display { font-family: 'Fira Sans Condensed', Tahoma, sans-serif; font-weight: 700; }
+a { color: var(--isar-dark); }
+
+header {
+  background: var(--isar-dark); color: #fff;
+  padding: 14px 16px;
+  display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+}
+header > a { display: flex; align-items: baseline; gap: 12px; color: inherit; text-decoration: none; }
+header h1 { font-size: 1.5rem; letter-spacing: .01em; }
+header .claim { opacity: .75; font-size: .9rem; }
+.nav-links { margin-left: auto; display: flex; gap: 1rem; }
+.nav-links a { font-size: .8rem; color: #fff; opacity: .85; text-decoration: none; white-space: nowrap; }
+.nav-links a:hover, .nav-links a[aria-current] { opacity: 1; text-decoration: underline; }
+
+.back-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 16px; font-size: .85rem; }
+.back-nav a { text-decoration: none; }
+.back-nav a:hover { text-decoration: underline; }
+
+main { max-width: 1200px; margin: 0 auto; padding: 32px 16px 64px; }
+main.schmal { max-width: 720px; }
+
+h2 { font-size: 1.5rem; color: var(--isar-dark); margin-bottom: 20px; }
+h3 { font-size: 1.1rem; color: var(--isar-dark); margin: 40px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+h3:first-of-type { margin-top: 0; }
+p { color: var(--ink-dim); font-size: .92rem; }
+p + p { margin-top: 10px; }
+.intro { max-width: 760px; margin-bottom: 20px; }
+
+/* Impressum */
+.schmal h4 { font-size: .92rem; margin: 22px 0 4px; }
+
+/* Lizenz-/Hinweisboxen */
+.box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 14px; }
+.box h4 { font-size: .92rem; margin-bottom: 4px; }
+.box p { font-size: .85rem; }
+.box.warn { background: var(--warn-bg); border-color: #ecd9ae; }
+.box.warn h4 { color: var(--warn); }
+
+/* Quellen-Tabelle */
+.table-wrap { overflow-x: auto; }
+table.sources { width: 100%; border-collapse: collapse; background: var(--surface); font-size: .85rem; border: 1px solid var(--border); }
+table.sources th {
+  text-align: left; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  color: var(--ink-dim); padding: 10px 14px; border-bottom: 2px solid var(--border); background: #f8fafa; white-space: nowrap;
+}
+table.sources td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+table.sources tbody tr { scroll-margin-top: 16px; }
+table.sources tbody tr:target td { background: #fff6da; }
+tr.cat-row td { background: #e8f3f6; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--isar-dark); padding: 8px 14px; }
+.src-title { font-weight: 700; }
+.src-file { font-family: ui-monospace, monospace; font-size: .7rem; color: var(--ink-dim); }
+.src-file a { color: inherit; }
+.src-note { font-size: .78rem; color: var(--ink-dim); margin-top: 6px; max-width: 340px; }
+.used-in { display: flex; flex-direction: column; gap: 2px; font-size: .8rem; }
+.used-in a { text-decoration: none; }
+.used-in a:hover, .orig-link:hover { text-decoration: underline; }
+.orig-link { text-decoration: none; }
+.dim { color: var(--ink-dim); font-style: italic; }
+.stand { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.turnus { display: block; font-size: .72rem; color: var(--ink-dim); }
+
+/* Technologie */
+.attr-list { display: flex; flex-direction: column; gap: 8px; }
+.attr-item {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: .85rem;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.attr-item .attr-note { color: var(--ink-dim); font-size: .8rem; }
+.attr-item a { font-size: .8rem; text-decoration: none; }
+
+/* FAQ */
+.faq details { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+.faq summary { cursor: pointer; padding: 12px 16px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: '+'; color: var(--isar); font-weight: 700; }
+.faq details[open] summary::after { content: '–'; }
+.faq details > div { padding: 0 16px 14px; }
+.faq ul { color: var(--ink-dim); font-size: .92rem; margin: 6px 0 0 20px; }
+
+footer {
+  max-width: 1200px; margin: 0 auto; padding: 8px 16px 32px; font-size: .8rem; color: var(--ink-dim);
+  display: flex; gap: 16px; flex-wrap: wrap;
+}
+footer a { color: inherit; }
+footer .copy { margin-right: auto; }
+
+@media (max-width: 700px) {
+  main { padding: 24px 16px 48px; }
+  .nav-links { margin-left: 0; width: 100%; }
+}

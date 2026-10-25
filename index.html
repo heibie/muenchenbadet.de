@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>München badet – Isar, Bäder &amp; Badewetter</title>
+  <meta name="description" content="Wassertemperatur und Pegel der Isar, Auslastung der Münchner Bäder, Badestellen und Badewetter – aus offenen Daten.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --isar:      #1b8aa6;   /* Isar-Türkis */
+      --isar-dark: #0e4f63;
+      --kies:      #e9e4d8;   /* Kiesbank */
+      --sand:      #f6f3ec;
+      --ink:       #10262e;
+      --ink-dim:   #5b6f76;
+      --surface:   #ffffff;
+      --border:    #dfe6e8;
+
+      --ok:    #1e8a52;
+      --warn:  #d99a00;
+      --bad:   #c0272d;
+
+      --kalt:  #2c5fa8;
+
+      --spalten: minmax(0, 1.6fr) minmax(0, 1fr);  /* gemeinsames Raster für Hero- und Karten-Reihe */
+    }
+
+    body {
+      font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--sand);
+      color: var(--ink);
+      line-height: 1.45;
+    }
+    .display { font-family: 'Fira Sans Condensed', Tahoma, sans-serif; font-weight: 700; }
+
+    header {
+      background: var(--isar-dark);
+      color: #fff;
+      padding: 14px 16px;
+      display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap;
+    }
+    header h1 { font-size: 1.5rem; letter-spacing: .01em; }
+    header .claim { opacity: .75; font-size: .9rem; }
+    .nav-links { margin-left: auto; display: flex; gap: 1rem; }
+    .nav-links a { font-size: .8rem; color: #fff; opacity: .85; text-decoration: none; white-space: nowrap; }
+    .nav-links a:hover { opacity: 1; text-decoration: underline; }
+
+    main { padding: 16px 24px; display: grid; gap: 16px; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .card h2 { font-size: 1.15rem; margin-bottom: 10px; color: var(--isar-dark); }
+    .muted { color: var(--ink-dim); font-size: .85rem; }
+
+    /* --- Hero: Isar heute --- */
+    .hero { display: grid; grid-template-columns: var(--spalten); gap: 16px; }
+    .hero .card { display: flex; flex-direction: column; gap: 6px; }
+    .big { font-size: 4rem; line-height: 1; color: var(--isar); }
+    .big small { font-size: 1.6rem; }
+    .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-dim); }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-weight: 600; font-size: .9rem; color: #fff; align-self: flex-start; }
+    .kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; font-size: .95rem; }
+    .kv dt { color: var(--ink-dim); }
+    .ampel { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+    .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+    /* Isar-Kachel: Temperatur links, Pegel rechts */
+    .isar-card { gap: 10px; }
+    .isar-card h2, .hero .card h2 { margin-bottom: 0; }
+    .mini { font-size: .7rem; color: var(--ink-dim); }
+    .isar-body { display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; }
+    .isar-body > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+    .isar-pegel { border-left: 1px solid var(--border); padding-left: 20px; }
+    .isar-temp-zeile, .pegel-zeile { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .isar-trend { font-size: .85rem; color: var(--ink-dim); }
+    .isar-trend b { color: var(--ink); }
+    .pegel-wert { font-size: 2.6rem; line-height: 1; color: var(--isar-dark); }
+    .pegel-wert small { font-size: 1.1rem; }
+    .spark { margin-top: auto; }
+    .spark svg { display: block; width: 100%; height: 44px; }
+    .spark .achse { display: flex; justify-content: space-between; font-size: .68rem; color: var(--ink-dim); }
+
+    /* Pegelskala: Zonen bis Meldestufe 4, Marker = aktueller Stand */
+    .pegel-skala { position: relative; margin: 6px 0 16px; }
+    .pegel-skala .zonen { display: flex; height: 10px; border-radius: 5px; overflow: hidden; }
+    .pegel-skala .zonen i { display: block; height: 100%; }
+    .pegel-skala .marker { position: absolute; top: -4px; width: 4px; height: 18px; margin-left: -2px; background: var(--ink); border-radius: 2px; box-shadow: 0 0 0 2px var(--surface); }
+    .pegel-skala .tick { position: absolute; top: 13px; transform: translateX(-50%); font-size: .65rem; color: var(--ink-dim); white-space: nowrap; }
+
+    /* Eisbaden-Tipps: Icon + Stichwort + ein Satz */
+    .tipps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 16px; margin-bottom: 8px; }
+    .tipp { display: flex; gap: 8px; align-items: flex-start; font-size: .82rem; line-height: 1.3; }
+    .tipp svg { width: 28px; height: 28px; flex: none; color: var(--kalt); }
+    .tipp b { display: block; font-size: .88rem; }
+    .tipp span { color: var(--ink-dim); }
+
+    .hinweise { display: grid; gap: 6px; }
+    .hinweis { font-size: .9rem; padding: 8px 10px; border-radius: 8px; background: var(--sand); border-left: 4px solid var(--isar); }
+    .hinweis.warn { border-color: var(--warn); }
+    .hinweis.bad { border-color: var(--bad); }
+
+    /* --- Karte + Liste --- */
+    .split { display: grid; grid-template-columns: var(--spalten); gap: 16px; }
+    #map { height: 520px; border-radius: 8px; }
+    #map .leaflet-tile-pane { filter: grayscale(0.8) brightness(1.1) contrast(0.9); }
+    /* Klick-Fokus nicht als Rahmen um Polygone/Marker zeichnen (Tastatur-Fokus bleibt sichtbar) */
+    #map .leaflet-interactive:focus:not(:focus-visible), #map .leaflet-marker-icon:focus:not(:focus-visible) { outline: none; }
+    .pin { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.35); transition: transform .15s; }
+    .pin svg { width: 16px; height: 16px; }
+    .pin-s { background: #0e4f63; }
+    .pin-b { background: var(--ok); }
+    .pin-z { background: var(--bad); }
+    .gefahr-pin svg { display: block; width: 20px; height: 18px; filter: drop-shadow(0 1px 1.5px rgba(0,0,0,.35)); }
+    .pin.aktiv { transform: scale(1.35); border-color: var(--ink); }
+    .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; font-size: .8rem; color: var(--ink-dim); }
+    .legend .leg-gefahr::before { background: none; width: 0; height: 0; border-radius: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 11px solid #f2b705; }
+    .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
+
+    #liste { max-height: 560px; overflow: auto; }
+    .orte { display: grid; gap: 6px; }
+    .ort { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+    .ort:hover, .ort.active { background: var(--sand); border-color: var(--border); }
+    .ort .name { font-weight: 600; }
+    .ort .meta { grid-column: 1 / -1; font-size: .8rem; color: var(--ink-dim); }
+    .bar { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--kies); overflow: hidden; }
+    .bar i { display: block; height: 100%; }
+    /* Filter-Chips über der Bäderliste */
+    .filter { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+    .filter button { font: inherit; font-size: .75rem; display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); padding: 2px 9px; border-radius: 99px; cursor: pointer; }
+    .filter button:hover { border-color: var(--isar); }
+    .filter button.on { background: var(--isar-dark); border-color: var(--isar-dark); color: #fff; }
+    .filter svg { width: 13px; height: 13px; flex: none; }
+
+    /* Mini-Balken je Bereich in der Bäderliste: Icon · Balken · % frei */
+    .bm { grid-column: 1 / -1; display: grid; grid-template-columns: 14px 1fr auto; gap: 2px 6px; align-items: center; margin-top: 2px; }
+    .bm .bar { grid-column: auto; height: 5px; }
+    .bm-icon { display: flex; color: var(--ink-dim); }
+    .bm-icon svg { width: 14px; height: 14px; }
+    .bm-wert { font-size: .72rem; color: var(--ink-dim); font-variant-numeric: tabular-nums; text-align: right; min-width: 5.5em; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+    .tabs[hidden] { display: none; }
+    .tabs button { font: inherit; font-size: .85rem; border: 1px solid var(--border); background: var(--surface); padding: 4px 12px; border-radius: 99px; cursor: pointer; }
+    .tabs button.on { background: var(--isar); border-color: var(--isar); color: #fff; }
+
+    /* --- Steckbrief in der Seitenleiste --- */
+    .back-link { background: none; border: none; cursor: pointer; font: inherit; font-size: .85rem; font-weight: 600; color: var(--ink-dim); padding: 0; margin-bottom: 12px; }
+    .back-link:hover { color: var(--ink); }
+    #liste h2.name { font-size: 1.5rem; line-height: 1.15; margin-bottom: 2px; color: var(--ink); }
+    #liste .typ { font-size: .85rem; color: var(--ink-dim); margin-bottom: 14px; }
+    .section-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-dim); margin: 16px 0 6px; font-weight: 600; }
+    .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0 8px; font-size: .85rem; }
+    .facts > div { background: var(--sand); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; }
+    .facts .label { font-size: .68rem; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-dim); }
+    .facts .value { font-weight: 700; overflow-wrap: break-word; }
+    .bereich { margin-bottom: 10px; }
+    .bereich-kopf { display: flex; justify-content: space-between; gap: 8px; font-size: .9rem; margin-bottom: 3px; }
+    .bereich .bar { height: 8px; }
+    .wt-klein { display: flex; align-items: center; gap: 10px; }
+    .wt-klein .display { font-size: 2.4rem; color: var(--isar); }
+    .gefahr { font-size: .85rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .gefahr:last-child { border-bottom: none; }
+    #liste p.text, .gefahr .text { font-size: .88rem; }
+    #liste a { color: var(--isar-dark); }
+
+    /* --- Bäder-Gruppen --- */
+    .gruppe { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-dim); font-weight: 600; margin: 10px 0 2px 10px; }
+    .gruppe:first-child { margin-top: 0; }
+    .ort.zu .name { color: var(--ink-dim); font-weight: 500; }
+    .zu-hinweis { display: inline-block; background: var(--kies); color: var(--ink-dim); font-weight: 600; font-size: .85rem; padding: 3px 10px; border-radius: 99px; margin-bottom: 6px; }
+
+    /* --- Wetter --- */
+    .wx-jetzt { display: flex; align-items: center; gap: 6px; }
+    .wx-gross { width: 92px; height: 92px; margin: -12px -6px -12px -14px; }
+    .wx-temp { font-size: 2.6rem; line-height: 1; color: var(--ink); }
+    .wx-temp small { font-size: 1.2rem; }
+    .wx-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
+    .wx-chip { display: flex; align-items: center; gap: 2px; background: var(--sand); border-radius: 8px; padding: 2px 6px 2px 0; font-size: .82rem; line-height: 1.15; }
+    .wx-chip img { width: 38px; height: 38px; flex: none; }
+    .wx-chip b { white-space: nowrap; }
+    .wx-chip .label { white-space: nowrap; display: block; font-size: .65rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-dim); }
+    .wx-tage { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+    .wx-tag { display: flex; flex-direction: column; align-items: center; font-size: .82rem; text-align: center; }
+    .wx-tag img { width: 52px; height: 52px; margin: -6px 0; }
+    .wx-tag .label { font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-dim); }
+
+    /* Hinweise mit Icon */
+    .hinweis { display: flex; align-items: center; gap: 8px; }
+    .hinweis img { width: 40px; height: 40px; flex: none; margin: -6px 0; }
+    .hinweis-x { width: 40px; text-align: center; font-size: 1.4rem; color: var(--bad); flex: none; }
+
+
+    footer { padding: 8px 24px 32px; font-size: .8rem; color: var(--ink-dim); display: flex; gap: 16px; flex-wrap: wrap; }
+    footer { justify-content: flex-end; }
+    footer a { color: inherit; }
+
+    @media (max-width: 860px) {
+      .hero, .split { grid-template-columns: 1fr; }
+      #map { height: 380px; }
+      .big { font-size: 3.2rem; }
+    }
+    @media (max-width: 860px) {
+      .tipps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    /* Mobil wie openbibmuc.de: Bäder/Badestellen als Bottom-Sheet über der Karte.
+       Eingeklappt bleiben Griff + Tabs sichtbar; Tap auf den Griff, auf einen Tab oder
+       einen Marker klappt auf, Tap in die leere Karte klappt zu. Nur Tap, kein Drag. */
+    #sheet-griff { display: none; }
+    @media (max-width: 720px) {
+      main { padding: 12px 16px; }
+      footer { padding: 8px 16px 24px; }
+      .split { display: block; position: relative; height: 78svh; min-height: 460px; overflow: hidden; border-radius: 12px; }
+      #kartenkachel { height: 100%; display: flex; flex-direction: column; padding: 12px; }
+      #kartenkachel h2 { margin-bottom: 6px; }
+      #kartenkachel .legend { order: -1; margin: 0 0 8px; gap: 4px 10px; font-size: .72rem; }
+      #map { flex: 1; height: auto; min-height: 0; }
+      #seitenleiste {
+        position: absolute; left: 0; right: 0; bottom: 0;
+        height: 64%; display: flex; flex-direction: column;
+        padding: 0 14px; border-radius: 16px 16px 0 0; border: none; border-top: 4px solid var(--isar);
+        box-shadow: 0 -6px 24px rgba(0,0,0,.22);
+        transform: translateY(calc(100% - 92px));
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+        z-index: 900;
+      }
+      #seitenleiste.sheet-open { transform: translateY(0); }
+      #sheet-griff { display: block; position: relative; flex: none; height: 44px; margin: 0 -14px; cursor: pointer; border: 0; background: none; width: calc(100% + 28px); }
+      #sheet-griff::before {
+        content: ''; position: absolute; top: 50%; left: 50%; width: 12px; height: 12px;
+        border-right: 3px solid var(--isar-dark); border-bottom: 3px solid var(--isar-dark); border-radius: 0 0 2px 0;
+        transform: translate(-50%, -30%) rotate(-135deg); transition: transform .3s;
+      }
+      #seitenleiste.sheet-open #sheet-griff::before { transform: translate(-50%, -70%) rotate(45deg); }
+      #seitenleiste .tabs { flex: none; }
+      #liste { flex: 1; min-height: 0; max-height: none; overflow: auto; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+      #map .leaflet-top, #map .leaflet-bottom { z-index: 400; }
+    }
+    @media (max-width: 560px) {
+      .isar-body { grid-template-columns: 1fr; }
+      .isar-pegel { border-left: none; padding-left: 0; border-top: 1px solid var(--border); padding-top: 14px; }
+    }
+  </style>
+  <!-- Matomo -->
+  <script>
+    var _paq = window._paq = window._paq || [];
+    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+    _paq.push(['disableCookies']);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="https://piwik.bielinski.de/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '15']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  <!-- End Matomo Code -->
+</head>
+<body>
+  <header>
+    <h1 class="display">München badet</h1>
+    <span class="claim">Isar, Bäder &amp; Badewetter</span>
+    <nav class="nav-links">
+      <a href="daten.html">Daten &amp; FAQ</a>
+      <a href="impressum.html">Impressum</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="card isar-card" id="isar">
+        <h2>Isar in München</h2>
+        <div class="isar-body">
+          <div class="isar-temp">
+            <span class="label">Wassertemperatur</span>
+            <div class="isar-temp-zeile">
+              <div class="big display" id="wt">–</div>
+              <span class="badge" id="wt-kat"></span>
+            </div>
+            <div class="isar-trend" id="wt-trend"></div>
+            <div class="spark" id="wt-spark"></div>
+            <span class="mini" id="wt-zeit"></span>
+          </div>
+          <div class="isar-pegel">
+            <span class="label">Wasserstand &amp; Abfluss</span>
+            <div class="pegel-zeile">
+              <div class="display pegel-wert" id="pegel-wert">–</div>
+              <div class="ampel"><span class="dot" id="pegel-dot"></span><span id="pegel-text">–</span></div>
+            </div>
+            <div class="pegel-skala" id="pegel-skala"></div>
+            <dl class="kv" id="pegel-kv"></dl>
+            <div class="spark" id="pegel-spark"></div>
+            <span class="mini" id="pegel-zeit"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Wetter in München</h2>
+        <div id="wetter"><p class="muted">Lade…</p></div>
+      </div>
+    </section>
+
+    <section class="card" id="hinweise-box" hidden>
+      <h2>Hinweise für heute</h2>
+      <div class="hinweise" id="hinweise"></div>
+    </section>
+
+    <section class="split">
+      <div class="card" id="kartenkachel">
+        <h2>Karte</h2>
+        <div id="map"></div>
+        <div class="legend">
+          <span style="--c:#1b8aa6">Baden erlaubt</span>
+          <span style="--c:#e5a3a6">Baden verboten</span>
+          <span class="leg-gefahr">Gefahrenstelle</span>
+          <span style="--c:#0e4f63">Badestelle</span>
+          <span style="--c:#1e8a52">Schwimmbad geöffnet</span>
+          <span style="--c:#c0272d">Schwimmbad geschlossen</span>
+        </div>
+      </div>
+      <div class="card" id="seitenleiste">
+        <button id="sheet-griff" type="button" aria-label="Liste auf- oder zuklappen"></button>
+        <div class="tabs" id="tabs">
+          <button class="on" data-tab="baeder">Bäder</button>
+          <button data-tab="badestellen">Isar-Badestellen</button>
+        </div>
+        <div id="liste"></div>
+      </div>
+    </section>
+
+    <section class="card" id="eisbaden">
+      <h2>Tipps zum Eisbaden in der Isar</h2>
+      <div class="tipps">
+        <div class="tipp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="7" r="3"/><circle cx="17" cy="8" r="2.5"/><path d="M2 20c0-3.5 2.7-6 6-6s6 2.5 6 6M14 14.5c.9-.3 1.9-.5 3-.5 2.8 0 5 2 5 5"/></svg><div><b>Nie allein</b><span>Immer jemanden dabeihaben, der im Notfall helfen kann.</span></div></div>
+        <div class="tipp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"/><path d="M7.5 12h2l1.5-2.5 2 4 1.5-1.5h2"/></svg><div><b>Erst checken lassen</b><span>Bei Herz- oder Kreislaufproblemen vorher ärztlich abklären.</span></div></div>
+        <div class="tipp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16a7 7 0 0 1 14 0"/><rect x="4" y="16" width="16" height="4" rx="1.5"/><circle cx="12" cy="6" r="1.8"/></svg><div><b>Mütze und Handschuhe</b><span>Kopf über Wasser, Hände auf den Kopf, Mütze auf, Handschuhe an.</span></div></div>
+        <div class="tipp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M12 14v-3.5M10 3h4M12 3v4M18 8l1.5-1.5"/></svg><div><b>Langsam eingewöhnen</b><span>Beim ersten Mal reichen 1–2 Minuten. Danach nach Gefühl langsam steigern, maximal so viele Minuten wie Grad Wassertemperatur.</span></div></div>
+        <div class="tipp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9c2 0 2-1.5 4.5-1.5S10 9 12 9s2-1.5 4.5-1.5S19 9 21 9"/><path d="M3 15h15M15 12l3 3-3 3"/></svg><div><b>Strömung und Wasserstand beachten</b><span>In der Isar nur ufernah und dort, wo du stehen kannst. Niemals bei Hochwasser!</span></div></div>
+        <div class="tipp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10l-1 7a4 4 0 0 1-8 0Z"/><path d="M12 14v6M9 20h6M4 4l16 16"/></svg><div><b>Kein Alkohol</b><span>Er täuscht Wärme vor, der Körper kühlt schneller aus.</span></div></div>
+        <div class="tipp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10h13v4a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5Z"/><path d="M17 11h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c-1 1.3 1 2.2 0 3.5M12 3c-1 1.3 1 2.2 0 3.5"/></svg><div><b>Schnell aufwärmen</b><span>Trockene Kleidung bereitlegen, danach ein warmes Getränk.</span></div></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <a href="daten.html">Daten, Quellen &amp; FAQ</a>
+    <a href="impressum.html">Impressum</a>
+  </footer>
+
+  <script src="js/app.js?v=2026-10-25b"></script>
+</body>
+</html>

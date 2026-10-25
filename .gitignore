@@ -1,0 +1,17 @@
+# Live-Daten, entstehen auf dem Server per Cron
+data/live.json
+data/history/
+
+# Cron-Konfiguration mit Token (manuell auf den Server hochgeladen)
+cron/_cfg.php
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Backups
+*.bak
+*.bak-*
